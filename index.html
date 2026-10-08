@@ -1,0 +1,798 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UPI Saver Simulator</title>
+<style>
+:root {
+  --bg:#f3f6fc;
+  --card:#fff;
+  --ink:#17233c;
+  --muted:#748099;
+  --primary:#5755e7;
+  --primary2:#7774ff;
+  --green:#16845c;
+  --red:#d94b61;
+  --border:#e5e9f2;
+  --shadow:0 10px 35px #192c5010;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.top{
+  background:#fff;border-bottom:1px solid var(--border);
+  padding:17px 5%;display:flex;align-items:center;
+  justify-content:space-between;gap:15px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{
+  background:linear-gradient(135deg,var(--primary),#928aff);
+  color:#fff;width:45px;height:45px;border-radius:15px;
+  display:grid;place-items:center;font-size:24px;font-weight:900;
+}
+.brand h1{font-size:18px;margin:0}
+.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.pill{background:#f0f0ff;color:var(--primary);padding:9px 13px;border-radius:12px;font-weight:800;font-size:13px}
+.safety{
+  text-align:center;padding:9px;background:#fff7dd;color:#795b0c;
+  font-size:12px;font-weight:700;border-bottom:1px solid #f0e5bd;
+}
+.wrap{max-width:1150px;margin:auto;padding:25px 18px 60px}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+.toolbar select{max-width:230px}
+select,input{
+  width:100%;min-width:0;padding:12px 13px;
+  border:1px solid var(--border);border-radius:12px;
+  background:#fff;color:var(--ink);outline:none;
+}
+input:focus,select:focus{border-color:var(--primary)}
+.toolbar select{width:auto;flex:1}
+.btn{
+  border:0;border-radius:12px;padding:12px 15px;
+  background:var(--primary);color:#fff;font-weight:800;
+}
+.btn:hover{filter:brightness(1.06)}
+.btn.secondary{background:#eeeefe;color:var(--primary)}
+.btn.danger{background:#fff0f1;color:var(--red)}
+.grid{display:grid;gap:16px}
+.grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:20px;padding:21px;box-shadow:var(--shadow);
+  min-width:0;
+}
+.balance{
+  background:linear-gradient(135deg,#4e4bdf,#8078ff);
+  color:white;border:0;min-height:205px;position:relative;overflow:hidden;
+}
+.balance:after{
+  content:"₹";position:absolute;right:20px;bottom:-45px;
+  font-size:190px;font-weight:900;color:#ffffff12;
+}
+.eyebrow{font-size:11px;font-weight:900;letter-spacing:1.3px;opacity:.8}
+.big{font-size:clamp(30px,5vw,43px);font-weight:900;margin:17px 0 8px;letter-spacing:-1.5px}
+.small{font-size:12px;color:var(--muted)}
+.balance .small{color:#e3e2ff}
+h2{font-size:20px;margin:0 0 6px}
+h3{font-size:16px;margin:0 0 16px}
+.section{margin-top:24px}
+.stat{font-size:25px;font-weight:900;margin-top:12px}
+.stat-icon{font-size:22px;margin-bottom:14px}
+.form{display:grid;gap:12px}
+label{display:grid;gap:6px;font-size:12px;font-weight:800;color:#596680}
+.hint{font-size:12px;color:var(--muted);line-height:1.5}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.tx-list{display:grid;gap:0}
+.tx{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 0;border-bottom:1px solid var(--border);
+}
+.tx:last-child{border-bottom:0}
+.tx-icon{
+  width:40px;height:40px;border-radius:13px;
+  display:grid;place-items:center;background:#f0f1ff;font-size:18px;
+}
+.tx-info{flex:1;min-width:0}
+.tx-info strong{display:block;font-size:13px;overflow-wrap:anywhere}
+.tx-info small{display:block;color:var(--muted);font-size:11px;margin-top:4px;overflow-wrap:anywhere}
+.amount{font-weight:900;white-space:nowrap;font-size:13px}
+.positive{color:var(--green)}
+.negative{color:var(--red)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:17px}
+.tab{background:#fff;color:#68738b;border:1px solid var(--border);padding:10px 13px;border-radius:11px;font-weight:800}
+.tab.active{background:var(--primary);color:white;border-color:var(--primary)}
+.page{display:none}
+.page.active{display:block}
+.empty{padding:24px 5px;text-align:center;color:var(--muted);font-size:13px}
+.note{padding:12px;border-radius:12px;background:#f4f5ff;color:#5555a2;font-size:12px;line-height:1.5}
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+  background:#17233c;color:white;padding:13px 18px;border-radius:13px;
+  box-shadow:var(--shadow);z-index:10;max-width:90%;font-size:13px;
+}
+.toast.error{background:#a92e42}
+.modal-bg{
+  position:fixed;inset:0;background:#111a2db0;z-index:20;
+  display:none;place-items:center;padding:18px;
+}
+.modal-bg.show{display:grid}
+.modal{background:white;border-radius:20px;padding:23px;width:min(430px,100%)}
+.modal h2{margin-bottom:15px}
+.hidden{display:none!important}
+@media(max-width:760px){
+  .grid.two,.grid.three{grid-template-columns:1fr}
+  .wrap{padding:18px 13px 40px}
+  .card{padding:18px}
+  .top{padding:14px}
+  .toolbar select{width:100%;max-width:none}
+  .toolbar .btn{flex:1}
+}
+</style>
+</head>
+<body>
+<div class="safety">🛡️ SIMULATION ONLY — No real money or real UPI payments are processed.</div>
+
+<header class="top">
+  <div class="brand">
+    <div class="logo">₹</div>
+    <div>
+      <h1>UPI Saver Simulator</h1>
+      <p id="subtitle">Your virtual money playground</p>
+    </div>
+  </div>
+  <div class="pill" id="headerBalance">₹0</div>
+</header>
+
+<main class="wrap">
+  <div id="setup" class="card hidden">
+    <h2>Create your player profile</h2>
+    <p class="hint">Each profile gets its own virtual balance and SIMUPI ID.</p>
+    <form id="setupForm" class="form">
+      <label>Player name
+        <input name="name" maxlength="30" placeholder="Enter your name" required>
+      </label>
+      <label>Starting salary
+        <select name="salary">
+          <option value="50000">₹50,000 — Standard salary</option>
+          <option value="30000">₹30,000 — Starter mode</option>
+          <option value="75000">₹75,000 — Pro mode</option>
+        </select>
+      </label>
+      <button class="btn">Create profile and receive salary</button>
+    </form>
+  </div>
+
+  <div id="game" class="hidden">
+    <div class="toolbar">
+      <select id="profileSelect" aria-label="Switch player profile"></select>
+      <button class="btn secondary" id="newProfileBtn">＋ New player</button>
+      <button class="btn secondary" id="copyIdBtn">Copy my SIMUPI ID</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-page="Home">🏠 Home</button>
+      <button class="tab" data-page="Pay">💸 Pay</button>
+      <button class="tab" data-page="Save">🏦 Save</button>
+      <button class="tab" data-page="Expenses">🧾 Expenses</button>
+      <button class="tab" data-page="History">📜 History</button>
+    </div>
+
+    <section class="page active" id="page-Home">
+      <div class="grid two">
+        <div class="card balance">
+          <div class="eyebrow">AVAILABLE VIRTUAL BALANCE</div>
+          <div class="big" id="balance">₹0</div>
+          <div class="small">Your money. Your decisions.</div>
+          <div style="margin-top:20px;font-size:13px;font-weight:800" id="myId"></div>
+        </div>
+        <div class="card">
+          <h3>💼 Salary & savings</h3>
+          <div class="row"><span class="small">Monthly salary</span><strong id="salaryLabel">₹0</strong></div>
+          <hr style="border:0;border-top:1px solid var(--border);margin:15px 0">
+          <div class="row"><span class="small">Total savings</span><strong class="positive" id="savingsLabel">₹0</strong></div>
+          <hr style="border:0;border-top:1px solid var(--border);margin:15px 0">
+          <div class="row"><span class="small">Total spending</span><strong id="spendingLabel">₹0</strong></div>
+          <button class="btn" style="width:100%;margin-top:18px" id="salaryBtn">Receive next month's salary</button>
+          <p class="hint">Salary is added only when you press the button. One salary can be claimed per simulated month.</p>
+        </div>
+      </div>
+      <div class="grid three section">
+        <div class="card"><div class="stat-icon">💳</div><div class="small">Transactions</div><div class="stat" id="txCount">0</div></div>
+        <div class="card"><div class="stat-icon">👥</div><div class="small">Other player profiles</div><div class="stat" id="profileCount">0</div></div>
+        <div class="card"><div class="stat-icon">🎯</div><div class="small">Savings progress</div><div class="stat" id="savingsProgress">0%</div></div>
+      </div>
+      <div class="card section">
+        <div class="row"><h3>Recent activity</h3><button class="btn secondary" data-goto="History">View all</button></div>
+        <div class="tx-list" id="recent"></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-Pay">
+      <div class="grid two">
+        <div class="card">
+          <h2>Send virtual money</h2>
+          <p class="hint">Enter another player's exact SIMUPI ID. Their profile must exist in this browser.</p>
+          <form id="payForm" class="form">
+            <label>Receiver SIMUPI ID
+              <input name="receiver" placeholder="friend1234@simupi" required>
+            </label>
+            <label>Amount (₹)
+              <input name="amount" type="number" min="1" max="100000000" step="0.01" placeholder="500" required>
+            </label>
+            <label>Note (optional)
+              <input name="note" maxlength="100" placeholder="Lunch, books, etc.">
+            </label>
+            <button class="btn">Review and send</button>
+          </form>
+          <p class="hint">Sending reduces your balance and increases the receiver's balance by the same amount.</p>
+        </div>
+        <div class="card">
+          <h3>🧪 How to test a transfer</h3>
+          <ol class="hint" style="padding-left:20px;line-height:2">
+            <li>Create a second player using “New player”.</li>
+            <li>Copy that player's SIMUPI ID.</li>
+            <li>Switch back to your profile.</li>
+            <li>Open Pay and send a test amount.</li>
+            <li>Switch to the receiver profile and check the new balance and history.</li>
+          </ol>
+          <div class="note">These profiles share this browser's local storage. They are not online accounts and cannot receive money from another device.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-Save">
+      <div class="grid two">
+        <div class="card">
+          <h2>Move money into savings</h2>
+          <p class="hint">Savings are kept separate from your spending balance.</p>
+          <form id="saveForm" class="form">
+            <label>Amount to save (₹)
+              <input name="amount" type="number" min="1" step="0.01" required placeholder="1000">
+            </label>
+            <button class="btn">Move to savings</button>
+          </form>
+          <hr style="border:0;border-top:1px solid var(--border);margin:20px 0">
+          <form id="withdrawForm" class="form">
+            <label>Amount to withdraw (₹)
+              <input name="amount" type="number" min="1" step="0.01" required placeholder="200">
+            </label>
+            <button class="btn secondary">Withdraw from savings</button>
+          </form>
+        </div>
+        <div class="card">
+          <h3>🎯 Savings goal</h3>
+          <form id="goalForm" class="form">
+            <label>Goal name
+              <input name="name" maxlength="50" placeholder="New laptop" required>
+            </label>
+            <label>Target amount (₹)
+              <input name="target" type="number" min="1" step="0.01" placeholder="60000" required>
+            </label>
+            <button class="btn">Set goal</button>
+          </form>
+          <div id="goalDisplay" style="margin-top:20px"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-Expenses">
+      <div class="grid two">
+        <div class="card">
+          <h2>Record an expense</h2>
+          <p class="hint">Choose a category and the simulator deducts the amount from your balance.</p>
+          <form id="expenseForm" class="form">
+            <label>What did you spend on?
+              <input name="title" maxlength="60" placeholder="Groceries, transport..." required>
+            </label>
+            <label>Category
+              <select name="category">
+                <option>Groceries</option><option>Transport</option>
+                <option>Education</option><option>Bills</option>
+                <option>Subscriptions</option><option>Shopping</option>
+                <option>Food</option><option>Other</option>
+              </select>
+            </label>
+            <label>Amount (₹)
+              <input name="amount" type="number" min="1" step="0.01" required placeholder="250">
+            </label>
+            <button class="btn">Record expense</button>
+          </form>
+        </div>
+        <div class="card">
+          <h3>Before you spend</h3>
+          <div class="note">This is a practice simulator. Your expense is only recorded in the game. It does not buy real goods, pay a real bill, or charge any payment method.</div>
+          <div style="margin-top:20px">
+            <div class="row"><span class="small">Available balance</span><strong id="expenseBalance">₹0</strong></div>
+            <hr style="border:0;border-top:1px solid var(--border);margin:15px 0">
+            <div class="row"><span class="small">Savings kept separate</span><strong id="expenseSavings">₹0</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="page-History">
+      <div class="card">
+        <div class="row"><h2>Transaction history</h2><button class="btn secondary" id="exportBtn">Export CSV</button></div>
+        <p class="hint">All transfers, salary credits, expenses and savings movements for the selected profile.</p>
+        <div class="tx-list" id="history"></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2 id="modalTitle">Confirm</h2>
+    <div id="modalBody"></div>
+    <div class="row" style="margin-top:20px">
+      <button class="btn secondary" id="modalCancel">Cancel</button>
+      <button class="btn" id="modalConfirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+
+<script>
+(() => {
+  "use strict";
+
+  const STORAGE_KEY = "simupi_fully_functional_v1";
+  const $ = (selector) => document.querySelector(selector);
+  const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+  let db = loadDatabase();
+  let activeId = db.activeId || Object.keys(db.profiles)[0] || null;
+  let pendingConfirm = null;
+  let toastTimer = null;
+
+  function loadDatabase() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      if (saved && saved.profiles && typeof saved.profiles === "object") {
+        return saved;
+      }
+    } catch (error) {
+      console.warn("Could not read saved game:", error);
+    }
+    return { version: 1, activeId: null, profiles: {} };
+  }
+
+  function saveDatabase() {
+    db.activeId = activeId;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+      return true;
+    } catch (error) {
+      toast("Browser storage is full or unavailable. Export your data if possible.", true);
+      return false;
+    }
+  }
+
+  function current() {
+    return activeId ? db.profiles[activeId] : null;
+  }
+
+  function idBase(name) {
+    return String(name).toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0, 16) || "player";
+  }
+
+  function makeSimupiId(name) {
+    let candidate;
+    do {
+      candidate = idBase(name) + Math.floor(1000 + Math.random() * 9000) + "@simupi";
+    } while (Object.values(db.profiles).some(p => p.simupiId.toLowerCase() === candidate.toLowerCase()));
+    return candidate;
+  }
+
+  function makeProfile(name, salary) {
+    const id = "p_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7);
+    const cleanName = String(name).trim().slice(0, 30) || "Saver";
+    const openingSalary = Number(salary) || 50000;
+    const profile = {
+      id, name: cleanName, simupiId: makeSimupiId(cleanName),
+      balance: openingSalary, savings: 0, salary: openingSalary,
+      lastSalaryMonth: new Date().toISOString().slice(0, 7),
+      totalSpending: 0, totalReceived: 0, totalSent: 0,
+      goal: null, transactions: []
+    };
+    db.profiles[id] = profile;
+    activeId = id;
+    addTransaction(profile, {
+      type: "Salary", title: "Opening salary received",
+      amount: openingSalary, direction: "in", note: "Starting virtual salary"
+    });
+    saveDatabase();
+    return profile;
+  }
+
+  function money(value) {
+    return "₹" + Number(value || 0).toLocaleString("en-IN", {
+      minimumFractionDigits: 0, maximumFractionDigits: 2
+    });
+  }
+
+  function safe(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+      "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+    })[char]);
+  }
+
+  function addTransaction(profile, data) {
+    const tx = {
+      id: "SIMTX-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase(),
+      date: new Date().toLocaleString(),
+      ...data
+    };
+    profile.transactions.unshift(tx);
+    return tx;
+  }
+
+  function toast(message, error = false) {
+    const el = $("#toast");
+    el.textContent = message;
+    el.classList.remove("hidden", "error");
+    if (error) el.classList.add("error");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.add("hidden"), 3200);
+  }
+
+  function switchPage(page) {
+    $$(".tab").forEach(button => button.classList.toggle("active", button.dataset.page === page));
+    $$(".page").forEach(section => section.classList.toggle("active", section.id === "page-" + page));
+  }
+
+  function profileForSimupi(value) {
+    const normalized = String(value || "").trim().toLowerCase();
+    return Object.values(db.profiles).find(profile => profile.simupiId.toLowerCase() === normalized) || null;
+  }
+
+  function positiveAmount(raw) {
+    const amount = Number(raw);
+    return Number.isFinite(amount) && amount > 0 && amount <= 100000000;
+  }
+
+  function requireAmount(form) {
+    const amount = Number(new FormData(form).get("amount"));
+    if (!positiveAmount(amount)) {
+      toast("Enter a valid amount greater than zero.", true);
+      return null;
+    }
+    return Math.round(amount * 100) / 100;
+  }
+
+  function showConfirm(title, body, action) {
+    $("#modalTitle").textContent = title;
+    $("#modalBody").textContent = body;
+    pendingConfirm = action;
+    $("#modalBg").classList.add("show");
+  }
+
+  function closeConfirm() {
+    $("#modalBg").classList.remove("show");
+    pendingConfirm = null;
+  }
+
+  function renderTransactions(transactions, target) {
+    if (!transactions.length) {
+      target.innerHTML = '<div class="empty">No transactions yet. Try sending or saving some virtual money.</div>';
+      return;
+    }
+    target.innerHTML = transactions.map(tx => {
+      const positive = tx.direction === "in" || tx.direction === "save-in";
+      const icon = tx.type === "Sent" ? "↗️" :
+        tx.type === "Received" ? "↙️" :
+        tx.type === "Salary" ? "💼" :
+        tx.type === "Expense" ? "🛍️" :
+        tx.type === "Savings" ? "🏦" : "💳";
+      const sign = tx.direction === "in" || tx.direction === "save-in" ? "+" :
+        tx.direction === "out" || tx.direction === "save-out" ? "−" : "";
+      return `<div class="tx">
+        <div class="tx-icon">${icon}</div>
+        <div class="tx-info">
+          <strong>${safe(tx.title)}</strong>
+          <small>${safe(tx.note || tx.type)} · ${safe(tx.date)} · ${safe(tx.id)}</small>
+        </div>
+        <div class="amount ${positive ? "positive" : tx.direction === "out" ? "negative" : ""}">${sign}${money(tx.amount)}</div>
+      </div>`;
+    }).join("");
+  }
+
+  function render() {
+    const profile = current();
+    const setup = $("#setup");
+    const game = $("#game");
+
+    if (!profile) {
+      setup.classList.remove("hidden");
+      game.classList.add("hidden");
+      $("#headerBalance").textContent = "₹0";
+      $("#subtitle").textContent = "Create your first virtual profile";
+      return;
+    }
+
+    setup.classList.add("hidden");
+    game.classList.remove("hidden");
+    $("#subtitle").textContent = "Virtual money · " + profile.name;
+    $("#headerBalance").textContent = money(profile.balance);
+    $("#balance").textContent = money(profile.balance);
+    $("#myId").textContent = "SIMUPI ID: " + profile.simupiId;
+    $("#salaryLabel").textContent = money(profile.salary);
+    $("#savingsLabel").textContent = money(profile.savings);
+    $("#spendingLabel").textContent = money(profile.totalSpending);
+    $("#txCount").textContent = profile.transactions.length;
+    $("#profileCount").textContent = Math.max(0, Object.keys(db.profiles).length - 1);
+    $("#expenseBalance").textContent = money(profile.balance);
+    $("#expenseSavings").textContent = money(profile.savings);
+
+    const goal = profile.goal;
+    const percent = goal ? Math.min(100, Math.floor(profile.savings / goal.target * 100)) : 0;
+    $("#savingsProgress").textContent = percent + "%";
+    $("#goalDisplay").innerHTML = goal
+      ? `<div class="row"><strong>${safe(goal.name)}</strong><strong>${money(profile.savings)} / ${money(goal.target)}</strong></div>
+         <div style="height:9px;background:#eee;border-radius:99px;margin-top:12px;overflow:hidden"><div style="height:100%;width:${percent}%;background:var(--primary);border-radius:99px"></div></div>
+         <p class="hint">${percent}% of your target. Keep saving!</p>`
+      : '<p class="hint">No goal yet. Create one above to track your progress.</p>';
+
+    const selector = $("#profileSelect");
+    selector.innerHTML = Object.values(db.profiles).map(p =>
+      `<option value="${safe(p.id)}" ${p.id === activeId ? "selected" : ""}>${safe(p.name)} · ${safe(p.simupiId)}</option>`
+    ).join("");
+
+    renderTransactions(profile.transactions.slice(0, 5), $("#recent"));
+    renderTransactions(profile.transactions, $("#history"));
+    saveDatabase();
+  }
+
+  function createProfileFromForm(form) {
+    const data = new FormData(form);
+    const name = String(data.get("name") || "").trim();
+    if (!name) return toast("Enter a player name.", true);
+    makeProfile(name, Number(data.get("salary")) || 50000);
+    form.reset();
+    render();
+    switchPage("Home");
+    toast("Profile created! Opening virtual salary credited.");
+  }
+
+  $("#setupForm").addEventListener("submit", event => {
+    event.preventDefault();
+    createProfileFromForm(event.currentTarget);
+  });
+
+  $("#newProfileBtn").addEventListener("click", () => {
+    const name = prompt("Enter the new player's name:");
+    if (name === null) return;
+    if (!name.trim()) return toast("Player name cannot be empty.", true);
+    const salaryInput = prompt("Choose opening salary: 30000, 50000, or 75000", "50000");
+    if (salaryInput === null) return;
+    const salary = [30000, 50000, 75000].includes(Number(salaryInput)) ? Number(salaryInput) : 50000;
+    makeProfile(name, salary);
+    render();
+    switchPage("Home");
+    toast("New player created and opening salary credited.");
+  });
+
+  $("#profileSelect").addEventListener("change", event => {
+    if (!db.profiles[event.target.value]) return;
+    activeId = event.target.value;
+    saveDatabase();
+    render();
+    switchPage("Home");
+    toast("Switched player profile.");
+  });
+
+  $("#copyIdBtn").addEventListener("click", async () => {
+    const profile = current();
+    if (!profile) return;
+    try {
+      await navigator.clipboard.writeText(profile.simupiId);
+      toast("SIMUPI ID copied: " + profile.simupiId);
+    } catch {
+      prompt("Copy your SIMUPI ID:", profile.simupiId);
+    }
+  });
+
+  $("#payForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    const sender = current();
+    const receiverId = String(data.get("receiver") || "").trim();
+    const amount = Number(data.get("amount"));
+    const note = String(data.get("note") || "").trim().slice(0, 100);
+
+    if (!sender) return toast("Create a player profile first.", true);
+    if (!receiverId.toLowerCase().endsWith("@simupi")) {
+      return toast("Use a SIMUPI ID ending in @simupi.", true);
+    }
+    const receiver = profileForSimupi(receiverId);
+    if (!receiver) {
+      return toast("Receiver not found. Create that player profile in this browser first.", true);
+    }
+    if (receiver.id === sender.id) return toast("You cannot send money to yourself.", true);
+    if (!positiveAmount(amount)) return toast("Enter a valid amount greater than zero.", true);
+    const value = Math.round(amount * 100) / 100;
+    if (sender.balance < value) return toast("Insufficient virtual balance.", true);
+
+    showConfirm("Confirm virtual transfer",
+      `Send ${money(value)} to ${receiver.name} (${receiver.simupiId})?`,
+      () => {
+        // Update both profiles together, then persist the shared database.
+        sender.balance = Math.round((sender.balance - value) * 100) / 100;
+        receiver.balance = Math.round((receiver.balance + value) * 100) / 100;
+        sender.totalSent += value;
+        receiver.totalReceived += value;
+        const transferId = "SIMTX-" + Date.now().toString(36).toUpperCase();
+
+        addTransaction(sender, {
+          id: transferId, type: "Sent", title: "Money sent to " + receiver.name,
+          amount: value, direction: "out", note: note || receiver.simupiId
+        });
+        addTransaction(receiver, {
+          id: transferId, type: "Received", title: "Money received from " + sender.name,
+          amount: value, direction: "in", note: note || sender.simupiId
+        });
+
+        saveDatabase();
+        closeConfirm();
+        form.reset();
+        render();
+        switchPage("Pay");
+        toast(`Transfer complete! ${money(value)} moved to ${receiver.name}.`);
+      }
+    );
+  });
+
+  $("#saveForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const profile = current();
+    const amount = requireAmount(event.currentTarget);
+    if (amount === null) return;
+    if (profile.balance < amount) return toast("Insufficient available balance.", true);
+
+    profile.balance = Math.round((profile.balance - amount) * 100) / 100;
+    profile.savings = Math.round((profile.savings + amount) * 100) / 100;
+    addTransaction(profile, {
+      type: "Savings", title: "Moved money into savings",
+      amount, direction: "save-out", note: "Savings deposit"
+    });
+    saveDatabase();
+    event.currentTarget.reset();
+    render();
+    toast(money(amount) + " moved to savings.");
+  });
+
+  $("#withdrawForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const profile = current();
+    const amount = requireAmount(event.currentTarget);
+    if (amount === null) return;
+    if (profile.savings < amount) return toast("Not enough money in savings.", true);
+
+    profile.savings = Math.round((profile.savings - amount) * 100) / 100;
+    profile.balance = Math.round((profile.balance + amount) * 100) / 100;
+    addTransaction(profile, {
+      type: "Savings", title: "Withdrawn from savings",
+      amount, direction: "save-in", note: "Savings withdrawal"
+    });
+    saveDatabase();
+    event.currentTarget.reset();
+    render();
+    toast(money(amount) + " returned to your available balance.");
+  });
+
+  $("#goalForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const name = String(data.get("name") || "").trim();
+    const target = Number(data.get("target"));
+    if (!name || !positiveAmount(target)) return toast("Enter a goal name and a valid target.", true);
+    current().goal = { name: name.slice(0, 50), target: Math.round(target * 100) / 100 };
+    saveDatabase();
+    render();
+    toast("Savings goal updated.");
+  });
+
+  $("#expenseForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    const profile = current();
+    const title = String(data.get("title") || "").trim();
+    const category = String(data.get("category") || "Other");
+    const amount = Number(data.get("amount"));
+    if (!title) return toast("Enter an expense description.", true);
+    if (!positiveAmount(amount)) return toast("Enter a valid amount greater than zero.", true);
+    const value = Math.round(amount * 100) / 100;
+    if (profile.balance < value) return toast("Insufficient balance for this expense.", true);
+
+    profile.balance = Math.round((profile.balance - value) * 100) / 100;
+    profile.totalSpending = Math.round((profile.totalSpending + value) * 100) / 100;
+    addTransaction(profile, {
+      type: "Expense", title: title + " · " + category,
+      amount: value, direction: "out", note: "Simulated expense"
+    });
+    saveDatabase();
+    form.reset();
+    render();
+    toast("Expense recorded: " + money(value) + ".");
+  });
+
+  $("#salaryBtn").addEventListener("click", () => {
+    const profile = current();
+    const month = new Date().toISOString().slice(0, 7);
+    if (profile.lastSalaryMonth === month) {
+      return toast("This month's salary has already been credited. Try again next month.", true);
+    }
+    showConfirm("Credit monthly salary",
+      `Add ${money(profile.salary)} to ${profile.name}'s virtual balance?`,
+      () => {
+        profile.balance = Math.round((profile.balance + profile.salary) * 100) / 100;
+        profile.lastSalaryMonth = month;
+        addTransaction(profile, {
+          type: "Salary", title: "Monthly salary credited",
+          amount: profile.salary, direction: "in", note: "Simulated monthly salary"
+        });
+        saveDatabase();
+        closeConfirm();
+        render();
+        toast("Monthly virtual salary credited.");
+      }
+    );
+  });
+
+  $("#modalCancel").addEventListener("click", closeConfirm);
+  $("#modalConfirm").addEventListener("click", () => {
+    if (typeof pendingConfirm === "function") pendingConfirm();
+  });
+  $("#modalBg").addEventListener("click", event => {
+    if (event.target === $("#modalBg")) closeConfirm();
+  });
+
+  $$(".tab").forEach(button => {
+    button.addEventListener("click", () => switchPage(button.dataset.page));
+  });
+  $$("[data-goto]").forEach(button => {
+    button.addEventListener("click", () => switchPage(button.dataset.goto));
+  });
+
+  $("#exportBtn").addEventListener("click", () => {
+    const profile = current();
+    const rows = [["Transaction ID","Date","Type","Title","Amount","Direction","Note"]];
+    profile.transactions.forEach(tx => rows.push([
+      tx.id, tx.date, tx.type, tx.title, tx.amount, tx.direction, tx.note || ""
+    ]));
+    const csv = rows.map(row => row.map(value =>
+      '"' + String(value ?? "").replace(/"/g, '""') + '"'
+    ).join(",")).join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = profile.name.replace(/[^a-z0-9_-]/gi, "_") + "-transactions.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  });
+
+  // Keep saved changes available after reloads or accidental tab closure.
+  window.addEventListener("pagehide", saveDatabase);
+
+  if (!current()) {
+    $("#setup").classList.remove("hidden");
+    $("#game").classList.add("hidden");
+  } else {
+    render();
+  }
+})();
+</script>
+</body>
+</html>
